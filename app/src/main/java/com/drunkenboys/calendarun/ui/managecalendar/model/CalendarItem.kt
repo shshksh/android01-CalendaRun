@@ -9,7 +9,8 @@ data class CalendarItem(
     val name: String,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    var check: Boolean = false
+    var check: Boolean = false,
+    val onClick: (Long) -> Unit
 ) {
 
     fun toCalendar() = Calendar(
@@ -29,11 +30,12 @@ data class CalendarItem(
             }
         }
 
-        fun from(calendar: Calendar) = CalendarItem(
+        fun from(calendar: Calendar, onClick: (Long) -> Unit) = CalendarItem(
             id = calendar.id,
             name = calendar.name,
             startDate = calendar.startDate,
-            endDate = calendar.endDate
+            endDate = calendar.endDate,
+            onClick = onClick
         )
     }
 }

@@ -7,7 +7,6 @@ import androidx.navigation.ui.setupWithNavController
 import com.drunkenboys.calendarun.R
 import com.drunkenboys.calendarun.databinding.FragmentManageCalendarBinding
 import com.drunkenboys.calendarun.ui.base.BaseFragment
-import com.drunkenboys.calendarun.ui.managecalendar.model.CalendarItem
 import com.drunkenboys.calendarun.util.extensions.launchAndRepeatWithViewLifecycle
 import com.drunkenboys.calendarun.util.extensions.throttleFirst
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,7 +16,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class ManageCalendarFragment : BaseFragment<FragmentManageCalendarBinding>(R.layout.fragment_manage_calendar) {
 
-    private val manageCalendarAdapter = ManageCalendarAdapter(::onCalendarItemClickListener)
+    private val manageCalendarAdapter = ManageCalendarAdapter()
 
     private val manageCalendarViewModel by navGraphViewModels<ManageCalendarViewModel>(R.id.manageCalendarFragment) { defaultViewModelProviderFactory }
 
@@ -32,14 +31,10 @@ class ManageCalendarFragment : BaseFragment<FragmentManageCalendarBinding>(R.lay
 
         launchAndRepeatWithViewLifecycle {
             launch { collectCalendarItemList() }
+            launch { collectCalendarClickEvent() }
             launch { collectOpenDeleteDialog() }
             launch { collectCheckedCalendarNum() }
         }
-    }
-
-    private fun onCalendarItemClickListener(calendarItem: CalendarItem) {
-        val action = ManageCalendarFragmentDirections.toEditCalendar(calendarItem.id)
-        navController.navigate(action)
     }
 
     private fun setupToolbar() {
@@ -71,6 +66,13 @@ class ManageCalendarFragment : BaseFragment<FragmentManageCalendarBinding>(R.lay
     private suspend fun collectCalendarItemList() {
         manageCalendarViewModel.calendarItemList.collect { calendarItemList ->
             manageCalendarAdapter.submitList(calendarItemList)
+        }
+    }
+
+    private suspend fun collectCalendarClickEvent() {
+        manageCalendarViewModel.calendarClickEvent.collect { calendarId ->
+            val action = ManageCalendarFragmentDirections.toEditCalendar(calendarId)
+            navController.navigate(action)
         }
     }
 

@@ -11,8 +11,7 @@ import com.drunkenboys.calendarun.ui.managecalendar.model.CalendarItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class ManageCalendarAdapter(val onClick: (CalendarItem) -> Unit) :
-    ListAdapter<CalendarItem, BaseViewHolder<ItemCalendarBinding>>(CalendarItem.diffUtil) {
+class ManageCalendarAdapter : ListAdapter<CalendarItem, BaseViewHolder<ItemCalendarBinding>>(CalendarItem.diffUtil) {
 
     private val _checkedCalendarNum = MutableStateFlow(0)
     val checkedCalendarNum: StateFlow<Int> = _checkedCalendarNum

@@ -46,6 +46,7 @@ class ThemeFragment : BaseFragment<FragmentThemeBinding>(R.layout.fragment_theme
         navController.navigate(action)
     }
 
+    // TODO: 2021/12/13 리소스 분리 고려
     private suspend fun collectTextAlign() {
         themeViewModel.textAlign.collect { align ->
             when (align) {

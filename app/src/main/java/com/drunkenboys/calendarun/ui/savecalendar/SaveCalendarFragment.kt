@@ -48,6 +48,7 @@ class SaveCalendarFragment : BaseFragment<FragmentSaveCalendarBinding>(R.layout.
         lifecycleScope.launch {
             val dateInMillis = pickRangeDateInMillis() ?: return@launch
 
+            // TODO: 2021/12/13 계산식의 의미를 확실히 하면 좋을 듯
             val startTime = LocalDate.ofEpochDay(dateInMillis.first / 1000 / 60 / 60 / 24)
             val endTime = LocalDate.ofEpochDay(dateInMillis.second / 1000 / 60 / 60 / 24)
 

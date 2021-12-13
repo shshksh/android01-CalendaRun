@@ -45,6 +45,7 @@ class SearchScheduleDivider(private val context: Context) : DividerItemDecoratio
         val childCount = parent.childCount
         for (i in 0 until childCount) {
             val child = parent.getChildAt(i)
+            // TODO: 2021/12/13 리소스 분리 고려
             if (child.tag == "DateItem") {
                 parent.getDecoratedBoundsWithMargins(child, mBounds)
                 val bottom = mBounds.top + child.translationY.roundToInt()

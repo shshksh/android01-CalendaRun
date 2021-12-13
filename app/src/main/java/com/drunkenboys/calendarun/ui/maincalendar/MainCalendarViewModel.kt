@@ -112,6 +112,7 @@ class MainCalendarViewModel @Inject constructor(
         }
     }
 
+    // TODO: 2021/12/13 Mapper로 분리
     private fun Slice.toCalendarSet() = CalendarSet(
         id = this@MainCalendarViewModel.calendarId.value.toInt(),
         name = name,

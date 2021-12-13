@@ -133,6 +133,7 @@ class SearchScheduleViewModel @Inject constructor(
 
     companion object {
 
+        // TODO: 2021/12/13 리소스 분리 고려
         private const val DEBOUNCE_DURATION = 500L
         private const val PAGING_THROTTLE_DURATION = 600L
     }

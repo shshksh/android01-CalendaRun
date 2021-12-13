@@ -79,6 +79,7 @@ class SettingFragment : BaseFragment<FragmentSettingBinding>(R.layout.fragment_s
 
     companion object {
 
+        // TODO: 2021/12/13 리소스 분리 고려
         private const val DEFAULT_TOUCH_THROTTLE_PERIOD = 500L
     }
 }

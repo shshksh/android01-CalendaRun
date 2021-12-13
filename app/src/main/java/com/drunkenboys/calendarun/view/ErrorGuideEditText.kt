@@ -63,6 +63,7 @@ class ErrorGuideEditText @JvmOverloads constructor(
 
     companion object {
 
+        // TODO: 2021/12/13 리소스 분리 고려
         private const val DURATION = 300L
         private const val HINT_TEXT_COLOR = "hintTextColor"
     }

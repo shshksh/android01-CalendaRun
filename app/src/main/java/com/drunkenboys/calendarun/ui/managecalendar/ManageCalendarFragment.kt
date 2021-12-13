@@ -7,7 +7,6 @@ import androidx.navigation.ui.setupWithNavController
 import com.drunkenboys.calendarun.R
 import com.drunkenboys.calendarun.databinding.FragmentManageCalendarBinding
 import com.drunkenboys.calendarun.ui.base.BaseFragment
-import com.drunkenboys.calendarun.ui.maincalendar.MainCalendarViewModel
 import com.drunkenboys.calendarun.ui.managecalendar.model.CalendarItem
 import com.drunkenboys.calendarun.util.extensions.launchAndRepeatWithViewLifecycle
 import com.drunkenboys.calendarun.util.extensions.throttleFirst
@@ -21,7 +20,6 @@ class ManageCalendarFragment : BaseFragment<FragmentManageCalendarBinding>(R.lay
     private val manageCalendarAdapter = ManageCalendarAdapter(::onCalendarItemClickListener)
 
     private val manageCalendarViewModel by navGraphViewModels<ManageCalendarViewModel>(R.id.manageCalendarFragment) { defaultViewModelProviderFactory }
-    private val mainCalendarViewModel by navGraphViewModels<MainCalendarViewModel>(R.id.mainCalendarFragment) { defaultViewModelProviderFactory }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,7 +32,6 @@ class ManageCalendarFragment : BaseFragment<FragmentManageCalendarBinding>(R.lay
 
         launchAndRepeatWithViewLifecycle {
             launch { collectCalendarItemList() }
-            launch { collectDeleteCalendar() }
             launch { collectOpenDeleteDialog() }
             launch { collectCheckedCalendarNum() }
         }
@@ -77,15 +74,6 @@ class ManageCalendarFragment : BaseFragment<FragmentManageCalendarBinding>(R.lay
         }
     }
 
-    private suspend fun collectDeleteCalendar() {
-        manageCalendarViewModel.deleteCalendarEvent.collect {
-            val currentCalendarId = mainCalendarViewModel.calendarId.value
-            if (manageCalendarViewModel.calendarItemList.value.none { it.id == currentCalendarId }) {
-                mainCalendarViewModel.setCalendarId(1)
-            }
-        }
-    }
-
     private suspend fun collectOpenDeleteDialog() {
         manageCalendarViewModel.openDeleteDialogEvent
             .throttleFirst(DEFAULT_TOUCH_THROTTLE_PERIOD)
@@ -95,7 +83,7 @@ class ManageCalendarFragment : BaseFragment<FragmentManageCalendarBinding>(R.lay
     }
 
     private suspend fun collectCheckedCalendarNum() {
-        manageCalendarAdapter.checkedCalendarNum.collect() { nums ->
+        manageCalendarAdapter.checkedCalendarNum.collect { nums ->
             binding.toolbarManageCalendar.menu.findItem(R.id.menu_delete_schedule).isVisible = nums > 0
         }
     }

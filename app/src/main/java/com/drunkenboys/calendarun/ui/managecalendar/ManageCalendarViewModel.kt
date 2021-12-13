@@ -25,20 +25,12 @@ class ManageCalendarViewModel @Inject constructor(
     private val _openDeleteDialogEvent = MutableSharedFlow<Int>()
     val openDeleteDialogEvent: SharedFlow<Int> = _openDeleteDialogEvent
 
-    fun deleteCalendarItem(currentCalendarItemList: List<CalendarItem>) {
+    fun deleteCheckedCalendar() {
         viewModelScope.launch {
-            currentCalendarItemList
+            calendarItemList.value
                 .filter { calendarItem -> calendarItem.check }
-                .forEach { calendarItem ->
-                    calendarLocalDataSource.deleteCalendar(
-                        calendarItem.toCalendar()
-                    )
-                }
-        }
-    }
+                .forEach { calendarItem -> calendarLocalDataSource.deleteCalendar(calendarItem.toCalendar()) }
 
-    fun emitDeleteCalendarEvent() {
-        viewModelScope.launch {
             _deleteCalendarEvent.emit(Unit)
         }
     }

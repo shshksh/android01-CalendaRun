@@ -1,8 +1,9 @@
-package com.drunkenboys.calendarun
+package com.drunkenboys.calendarun.widget
 
 import android.content.Context
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
+import com.drunkenboys.calendarun.R
 import com.drunkenboys.calendarun.data.schedule.local.ScheduleLocalDataSource
 import com.drunkenboys.calendarun.ui.searchschedule.model.ScheduleItem
 import kotlinx.coroutines.CoroutineScope
@@ -65,6 +66,7 @@ class CalendaRunRemoteViewsFactory constructor(
     override fun hasStableIds() = false
 
     companion object {
+
         private const val VIEW_TYPE_COUNT = 1
     }
 }

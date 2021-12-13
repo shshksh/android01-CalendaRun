@@ -1,4 +1,4 @@
-package com.drunkenboys.calendarun
+package com.drunkenboys.calendarun.widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import com.drunkenboys.calendarun.R
 import com.drunkenboys.calendarun.util.localDateToString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,6 +64,7 @@ class CalendaRunAppWidget : AppWidgetProvider() {
     }
 
     companion object {
+
         private const val APPWIDGET_ID = "id"
     }
 }

@@ -2,7 +2,6 @@ package com.drunkenboys.calendarun.ui.managecalendar
 
 import android.os.Bundle
 import android.view.View
-import androidx.core.view.isVisible
 import androidx.navigation.navGraphViewModels
 import androidx.navigation.ui.setupWithNavController
 import com.drunkenboys.calendarun.R
@@ -26,6 +25,7 @@ class ManageCalendarFragment : BaseFragment<FragmentManageCalendarBinding>(R.lay
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.viewModel = manageCalendarViewModel
 
         setupToolbar()
         setupAdapter()
@@ -74,8 +74,6 @@ class ManageCalendarFragment : BaseFragment<FragmentManageCalendarBinding>(R.lay
     private suspend fun collectCalendarItemList() {
         manageCalendarViewModel.calendarItemList.collect { calendarItemList ->
             manageCalendarAdapter.submitList(calendarItemList)
-            binding.rvManageCalendar.isVisible = calendarItemList.isNotEmpty()
-            binding.tvEmpty.isVisible = calendarItemList.isEmpty()
         }
     }
 

@@ -69,12 +69,7 @@ class SaveCalendarViewModel @Inject constructor(
     }
 
     fun addSlice() {
-        viewModelScope.launch {
-            val newList = mutableListOf<SliceItem>()
-            newList.addAll(sliceItemList.value)
-            newList.add(SliceItem())
-            _sliceItemList.emit(newList.toList())
-        }
+        _sliceItemList.value += SliceItem()
     }
 
     private fun deleteSliceList(calendarId: Long) {

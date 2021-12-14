@@ -30,7 +30,7 @@ class SaveCalendarViewModel @Inject constructor(
 
     val calendarName = MutableStateFlow("")
 
-    val useDefaultCalendar = MutableStateFlow(false)
+    val isDefaultCalendar = MutableStateFlow(false)
 
     private val _saveCalendarEvent = MutableSharedFlow<Boolean>()
     val saveCalendarEvent: SharedFlow<Boolean> = _saveCalendarEvent
@@ -97,7 +97,7 @@ class SaveCalendarViewModel @Inject constructor(
 
     private fun setUseDefaultCalendar() {
         viewModelScope.launch {
-            useDefaultCalendar.emit(sliceItemList.value.isEmpty())
+            isDefaultCalendar.emit(sliceItemList.value.isEmpty())
         }
     }
 
@@ -108,7 +108,7 @@ class SaveCalendarViewModel @Inject constructor(
     }
 
     private suspend fun saveCalendarInfo(): Boolean {
-        val useDefaultCalendar = useDefaultCalendar.value
+        val useDefaultCalendar = isDefaultCalendar.value
         val calendarName = calendarName.value
         val sliceList = _sliceItemList.value
         var canSave = true

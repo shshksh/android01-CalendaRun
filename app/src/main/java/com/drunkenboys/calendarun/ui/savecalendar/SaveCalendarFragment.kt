@@ -76,8 +76,7 @@ class SaveCalendarFragment : BaseFragment<FragmentSaveCalendarBinding>(R.layout.
     private fun setupToolbarMenuOnItemClickListener() {
         binding.toolbarSaveCalendar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.menu_delete_slice) {
-                val currentSliceItemList = saveCalendarAdapter.currentList
-                saveCalendarViewModel.deleteSliceItem(currentSliceItemList)
+                saveCalendarViewModel.deleteCheckedSlice()
                 true
             } else {
                 false

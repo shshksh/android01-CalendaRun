@@ -78,15 +78,12 @@ class SaveCalendarViewModel @Inject constructor(
         }
     }
 
-    fun deleteSliceItem(currentSliceItemList: List<SliceItem>) {
-        viewModelScope.launch {
-            deleteSliceIdList.addAll(currentSliceItemList
-                .filter { sliceItem -> sliceItem.check }
-                .map { sliceItem -> sliceItem.id }
-            )
+    fun deleteCheckedSlice() {
+        deleteSliceIdList += sliceItemList.value
+            .filter { sliceItem -> sliceItem.check }
+            .map { sliceItem -> sliceItem.id }
 
-            _sliceItemList.emit(currentSliceItemList.filter { sliceItem -> !sliceItem.check })
-        }
+        _sliceItemList.value = sliceItemList.value.filter { sliceItem -> !sliceItem.check }
     }
 
     private fun emitBlankTitleEvent() {

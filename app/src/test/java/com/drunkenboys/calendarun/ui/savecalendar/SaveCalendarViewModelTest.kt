@@ -108,7 +108,7 @@ class SearchScheduleViewModelTest {
             it.check = true
         }
 
-        viewModel.deleteSliceItem(viewModel.sliceItemList.value)
+        viewModel.deleteCheckedSlice()
 
         assertEquals(7, viewModel.sliceItemList.value.size)
     }

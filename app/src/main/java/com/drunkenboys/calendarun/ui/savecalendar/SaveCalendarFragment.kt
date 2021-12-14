@@ -15,6 +15,7 @@ import com.drunkenboys.calendarun.util.extensions.pickRangeDateInMillis
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -85,7 +86,7 @@ class SaveCalendarFragment : BaseFragment<FragmentSaveCalendarBinding>(R.layout.
     }
 
     private suspend fun collectSliceItemList() {
-        saveCalendarViewModel.sliceItemList.collect { list ->
+        saveCalendarViewModel.sliceItemList.collectLatest { list ->
             saveCalendarAdapter.submitList(list.sortedWith(compareBy(nullsLast()) { it.startDate.value }))
             delay(300)
             binding.svSaveCalendar.smoothScrollTo(0, binding.tvSaveCalendarSaveCalendar.bottom)

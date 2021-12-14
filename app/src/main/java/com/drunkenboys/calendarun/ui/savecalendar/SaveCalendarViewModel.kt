@@ -25,7 +25,9 @@ class SaveCalendarViewModel @Inject constructor(
 
     private val calendarId = savedStateHandle[KEY_CALENDAR_ID] ?: 0L
 
-    private val _sliceItemList = MutableStateFlow(listOf(SliceItem()))
+    private val isUpdate = calendarId > 0
+
+    private val _sliceItemList: MutableStateFlow<List<SliceItem>> = MutableStateFlow(emptyList())
     val sliceItemList: StateFlow<List<SliceItem>> = _sliceItemList
 
     val calendarName = MutableStateFlow("")
@@ -41,25 +43,22 @@ class SaveCalendarViewModel @Inject constructor(
     private val deleteSliceIdList = mutableListOf<Long>()
 
     init {
+        restoreCalendarData()
+        if (!isUpdate) _sliceItemList.value = listOf(SliceItem())
+    }
+
+    private fun restoreCalendarData() {
+        if (!isUpdate) return
+
         viewModelScope.launch {
-            val calendar = calendarLocalDataSource.fetchCalendar(calendarId) ?: return@launch
+            val calendar = calendarLocalDataSource.fetchCalendar(calendarId)
 
-            calendarName.emit(calendar.name)
-
-            val sliceItemList = mutableListOf<SliceItem>()
-            val sliceList = sliceLocalDataSource.fetchCalendarSliceList(calendarId).firstOrNull() ?: return@launch
-            sliceList.forEach { slice ->
-                sliceItemList.add(
-                    SliceItem(
-                        id = slice.id,
-                        name = MutableStateFlow(slice.name),
-                        startDate = MutableStateFlow(slice.startDate),
-                        endDate = MutableStateFlow(slice.endDate)
-                    )
-                )
-            }
-            _sliceItemList.emit(sliceItemList)
-            setUseDefaultCalendar()
+            calendarName.value = calendar.name
+            _sliceItemList.value = sliceLocalDataSource.fetchCalendarSliceList(calendarId)
+                .firstOrNull()
+                ?.map { SliceItem.from(it) }
+                ?: return@launch
+            isDefaultCalendar.value = sliceItemList.value.isEmpty()
         }
     }
 
@@ -92,12 +91,6 @@ class SaveCalendarViewModel @Inject constructor(
             )
 
             _sliceItemList.emit(currentSliceItemList.filter { sliceItem -> !sliceItem.check })
-        }
-    }
-
-    private fun setUseDefaultCalendar() {
-        viewModelScope.launch {
-            isDefaultCalendar.emit(sliceItemList.value.isEmpty())
         }
     }
 

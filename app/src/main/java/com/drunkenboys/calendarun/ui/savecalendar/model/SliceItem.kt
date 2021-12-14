@@ -1,6 +1,7 @@
 package com.drunkenboys.calendarun.ui.savecalendar.model
 
 import androidx.recyclerview.widget.DiffUtil
+import com.drunkenboys.calendarun.data.slice.entity.Slice
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.time.LocalDate
@@ -30,5 +31,12 @@ data class SliceItem(
                     oldItem == newItem
             }
         }
+
+        fun from(slice: Slice) = SliceItem(
+            id = slice.id,
+            name = MutableStateFlow(slice.name),
+            startDate = MutableStateFlow(slice.startDate),
+            endDate = MutableStateFlow(slice.endDate)
+        )
     }
 }

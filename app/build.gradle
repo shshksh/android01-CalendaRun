@@ -92,7 +92,6 @@ dependencies {
     // coroutine
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutine_version"
-    testImplementation 'app.cash.turbine:turbine:0.7.0'
 
     // room
     implementation "androidx.room:room-runtime:$room_version"

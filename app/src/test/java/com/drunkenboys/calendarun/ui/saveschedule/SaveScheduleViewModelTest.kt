@@ -1,7 +1,7 @@
 package com.drunkenboys.calendarun.ui.saveschedule
 
 import androidx.lifecycle.SavedStateHandle
-import app.cash.turbine.test
+import androidx.lifecycle.viewModelScope
 import com.drunkenboys.calendarun.KEY_CALENDAR_ID
 import com.drunkenboys.calendarun.KEY_SCHEDULE_ID
 import com.drunkenboys.calendarun.data.calendar.entity.Calendar
@@ -13,6 +13,9 @@ import com.drunkenboys.calendarun.data.schedule.local.ScheduleLocalDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -80,13 +83,14 @@ class SaveScheduleViewModelTest {
 
     @Test
     fun `제목_미입력_시_저장_테스트`() = testScope.runBlockingTest {
-        viewModel.blankTitleEvent.test {
-            viewModel.saveSchedule()
-            val result = awaitItem()
-
-            assertEquals(Unit, result)
-            cancelAndConsumeRemainingEvents()
+        lateinit var testFlow: StateFlow<Unit>
+        viewModel.viewModelScope.launch {
+            testFlow = viewModel.blankTitleEvent.stateIn(this)
         }
+
+        viewModel.saveSchedule()
+
+        assertEquals(Unit, testFlow.value)
     }
 
     @Test
@@ -96,14 +100,15 @@ class SaveScheduleViewModelTest {
         viewModel.title.value = title
         viewModel.memo.value = memo
 
-        viewModel.saveScheduleEvent.test {
-            viewModel.saveSchedule()
-            val result = awaitItem()
-
-            assertEquals(title, result.first.name)
-            assertEquals(memo, result.first.memo)
-            cancelAndConsumeRemainingEvents()
+        lateinit var testFlow: StateFlow<Pair<Schedule, String>>
+        viewModel.viewModelScope.launch {
+            testFlow = viewModel.saveScheduleEvent.stateIn(this)
         }
+
+        viewModel.saveSchedule()
+
+        assertEquals(title, testFlow.value.first.name)
+        assertEquals(memo, testFlow.value.first.memo)
     }
 
     @Test
@@ -112,14 +117,16 @@ class SaveScheduleViewModelTest {
         val endDate = LocalDateTime.now()
         val schedule = Schedule(1, 0, "test", startDate, endDate, Schedule.NotificationType.A_HOUR_AGO, "memo", 0)
         scheduleDataSource.insertSchedule(schedule)
+
         viewModel = createSaveScheduleViewModel(1)
 
-        viewModel.deleteScheduleEvent.test {
-            viewModel.deleteSchedule()
-            val result = awaitItem()
-
-            assertEquals(schedule, result.first)
-            cancelAndConsumeRemainingEvents()
+        lateinit var testFlow: StateFlow<Pair<Schedule, String>>
+        viewModel.viewModelScope.launch {
+            testFlow = viewModel.deleteScheduleEvent.stateIn(this)
         }
+
+        viewModel.deleteSchedule()
+
+        assertEquals(schedule, testFlow.value.first)
     }
 }

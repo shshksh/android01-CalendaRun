@@ -1,7 +1,7 @@
 package com.drunkenboys.calendarun.ui.savecalendar
 
 import androidx.lifecycle.SavedStateHandle
-import app.cash.turbine.test
+import androidx.lifecycle.viewModelScope
 import com.drunkenboys.calendarun.KEY_CALENDAR_ID
 import com.drunkenboys.calendarun.data.calendar.entity.Calendar
 import com.drunkenboys.calendarun.data.calendar.local.CalendarLocalDataSource
@@ -12,6 +12,9 @@ import com.drunkenboys.calendarun.data.slice.local.SliceLocalDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Assert.*
@@ -117,80 +120,95 @@ class SearchScheduleViewModelTest {
     fun `달력_저장_테스트`() = testScope.runBlockingTest {
         viewModel = createViewModel()
         viewModel.calendarName.value = "test calendar"
-        val checkPoint = viewModel.sliceItemList.value.first()
-        checkPoint.name.value = "checkpoint"
-        checkPoint.startDate.value = LocalDate.now()
-        checkPoint.endDate.value = LocalDate.now()
-
-        viewModel.saveCalendarEvent.test {
-            viewModel.emitSaveCalendar()
-
-            val result = awaitItem()
-            assertTrue(result)
+        viewModel.sliceItemList.value.first().apply {
+            name.value = "slice"
+            startDate.value = LocalDate.now()
+            endDate.value = LocalDate.now()
         }
+
+        lateinit var testFlow: StateFlow<Boolean>
+        viewModel.viewModelScope.launch {
+            testFlow = viewModel.saveCalendarEvent.stateIn(this)
+        }
+
+        viewModel.emitSaveCalendar()
+
+        assertTrue(testFlow.value)
     }
 
     @Test
     fun `달력_이름이_비어있을_때_달력_저장_실패`() = testScope.runBlockingTest {
         viewModel = createViewModel()
-        val checkPoint = viewModel.sliceItemList.value.first()
-        checkPoint.name.value = "checkpoint"
-        checkPoint.startDate.value = LocalDate.now()
-        checkPoint.endDate.value = LocalDate.now()
-
-        viewModel.saveCalendarEvent.test {
-            viewModel.emitSaveCalendar()
-
-            val result = awaitItem()
-            assertFalse(result)
+        viewModel.sliceItemList.value.first().apply {
+            name.value = "checkpoint"
+            startDate.value = LocalDate.now()
+            endDate.value = LocalDate.now()
         }
+
+        lateinit var testFlow: StateFlow<Boolean>
+        viewModel.viewModelScope.launch {
+            testFlow = viewModel.saveCalendarEvent.stateIn(this)
+        }
+
+        viewModel.emitSaveCalendar()
+
+        assertFalse(testFlow.value)
     }
 
     @Test
     fun `체크포인트_이름이_비어있을_때_달력_저장_실패`() = testScope.runBlockingTest {
         viewModel = createViewModel()
         viewModel.calendarName.value = "test calendar"
-        val checkPoint = viewModel.sliceItemList.value.first()
-        checkPoint.startDate.value = LocalDate.now()
-        checkPoint.endDate.value = LocalDate.now()
-
-        viewModel.saveCalendarEvent.test {
-            viewModel.emitSaveCalendar()
-
-            val result = awaitItem()
-            assertFalse(result)
+        viewModel.sliceItemList.value.first().apply {
+            startDate.value = LocalDate.now()
+            endDate.value = LocalDate.now()
         }
+
+        lateinit var testFlow: StateFlow<Boolean>
+        viewModel.viewModelScope.launch {
+            testFlow = viewModel.saveCalendarEvent.stateIn(this)
+        }
+
+        viewModel.emitSaveCalendar()
+
+        assertFalse(testFlow.value)
     }
 
     @Test
     fun `체크포인트_시작_날짜가_비어있을_때_달력_저장_실패`() = testScope.runBlockingTest {
         viewModel = createViewModel()
         viewModel.calendarName.value = "test calendar"
-        val checkPoint = viewModel.sliceItemList.value.first()
-        checkPoint.name.value = "checkpoint"
-        checkPoint.endDate.value = LocalDate.now()
-
-        viewModel.saveCalendarEvent.test {
-            viewModel.emitSaveCalendar()
-
-            val result = awaitItem()
-            assertFalse(result)
+        viewModel.sliceItemList.value.first().apply {
+            name.value = "checkpoint"
+            endDate.value = LocalDate.now()
         }
+
+        lateinit var testFlow: StateFlow<Boolean>
+        viewModel.viewModelScope.launch {
+            testFlow = viewModel.saveCalendarEvent.stateIn(this)
+        }
+
+        viewModel.emitSaveCalendar()
+
+        assertFalse(testFlow.value)
     }
 
     @Test
     fun `체크포인트_끝_날짜가_비어있을_때_달력_저장_실패`() = testScope.runBlockingTest {
         viewModel = createViewModel()
         viewModel.calendarName.value = "test calendar"
-        val checkPoint = viewModel.sliceItemList.value.first()
-        checkPoint.name.value = "checkpoint"
-        checkPoint.startDate.value = LocalDate.now()
-
-        viewModel.saveCalendarEvent.test {
-            viewModel.emitSaveCalendar()
-
-            val result = awaitItem()
-            assertFalse(result)
+        viewModel.sliceItemList.value.first().apply {
+            name.value = "checkpoint"
+            startDate.value = LocalDate.now()
         }
+
+        lateinit var testFlow: StateFlow<Boolean>
+        viewModel.viewModelScope.launch {
+            testFlow = viewModel.saveCalendarEvent.stateIn(this)
+        }
+
+        viewModel.emitSaveCalendar()
+
+        assertFalse(testFlow.value)
     }
 }

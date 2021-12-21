@@ -93,64 +93,51 @@ class SaveCalendarViewModel @Inject constructor(
     }
 
     private suspend fun saveCalendarInfo(): Boolean {
-        val useDefaultCalendar = isDefaultCalendar.value
-        val calendarName = calendarName.value
-        val sliceList = _sliceItemList.value
-        var canSave = true
-
-        if (calendarName.isBlank()) {
-            emitBlankTitleEvent()
-            canSave = false
+        if (!validateCalendarData()) {
+            return false
         }
 
-        if (useDefaultCalendar && canSave) {
-            saveCalendar(calendarId, calendarName)
+        if (isDefaultCalendar.value) {
+            saveCalendar(calendarId, calendarName.value)
             deleteSliceList(calendarId)
             return true
         }
 
-        var calendarStartDate = sliceList.getOrNull(0)?.startDate?.value ?: LocalDate.now()
-        var calendarEndDate = sliceList.getOrNull(0)?.endDate?.value ?: LocalDate.now()
+        val calendarStartDate = sliceItemList.value.getOrNull(0)?.startDate?.value ?: LocalDate.now()
+        val calendarEndDate = sliceItemList.value.getOrNull(0)?.endDate?.value ?: LocalDate.now()
 
-        sliceList.forEach { item ->
-            val name = item.name.value
-            val startDate = item.startDate.value
-            val endDate = item.endDate.value
+        val newCalendarId = saveCalendar(calendarId, calendarName.value, calendarStartDate, calendarEndDate)
 
-            if (name.isBlank()) {
-                emitBlankSliceNameEvent(item)
-                canSave = false
-            }
-            if (startDate == null || endDate == null) {
-                emitBlankSliceStartDateEvent(item)
-                emitBlankSliceEndDateEvent(item)
-                canSave = false
-            }
-
-            startDate?.let {
-                if (calendarStartDate.isAfter(it)) {
-                    calendarStartDate = it
-                }
-            }
-
-            endDate?.let {
-                if (calendarEndDate.isBefore(it)) {
-                    calendarEndDate = it
-                }
-            }
-        }
-
-        if (!canSave) return false
-
-        val newCalendarId = saveCalendar(calendarId, calendarName, calendarStartDate, calendarEndDate)
-
-        sliceList.forEach { item ->
+        sliceItemList.value.forEach { item ->
             saveSlice(item, newCalendarId)
         }
 
         deleteSlice()
 
         return true
+    }
+
+    private fun validateCalendarData(): Boolean {
+        var canSave = true
+
+        if (calendarName.value.isBlank()) {
+            emitBlankTitleEvent()
+            canSave = false
+        }
+
+        sliceItemList.value.forEach { sliceItem ->
+            if (sliceItem.name.value.isBlank()) {
+                emitBlankSliceNameEvent(sliceItem)
+                canSave = false
+            }
+            if (sliceItem.startDate.value == null || sliceItem.endDate.value == null) {
+                emitBlankSliceStartDateEvent(sliceItem)
+                emitBlankSliceEndDateEvent(sliceItem)
+                canSave = false
+            }
+        }
+
+        return canSave
     }
 
     private suspend fun saveCalendar(

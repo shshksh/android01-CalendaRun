@@ -128,6 +128,7 @@ class ExpandableLinearLayout @JvmOverloads constructor(
 
     companion object {
 
+        // TODO: 2021/12/13 리소스 분리 고려
         private const val DEFAULT_ANIMATION_DURATION = 150L
     }
 }

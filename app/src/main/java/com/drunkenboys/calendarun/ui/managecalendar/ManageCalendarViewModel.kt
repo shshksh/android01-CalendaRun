@@ -16,30 +16,26 @@ class ManageCalendarViewModel @Inject constructor(
 
     val calendarItemList = calendarLocalDataSource.fetchCustomCalendar()
         .map { calendarList ->
-            calendarList.map { calendar -> CalendarItem.from(calendar) }
+            calendarList.map { calendar -> CalendarItem.from(calendar, ::emitCalendarClickEvent) }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
-    private val _deleteCalendarEvent = MutableSharedFlow<Unit>()
-    val deleteCalendarEvent: SharedFlow<Unit> = _deleteCalendarEvent
 
     private val _openDeleteDialogEvent = MutableSharedFlow<Int>()
     val openDeleteDialogEvent: SharedFlow<Int> = _openDeleteDialogEvent
 
-    fun deleteCalendarItem(currentCalendarItemList: List<CalendarItem>) {
+    private val _calendarClickEvent = MutableSharedFlow<Long>()
+    val calendarClickEvent: SharedFlow<Long> = _calendarClickEvent
+
+    fun deleteCheckedCalendar() {
         viewModelScope.launch {
-            currentCalendarItemList
+            calendarItemList.value
                 .filter { calendarItem -> calendarItem.check }
-                .forEach { calendarItem ->
-                    calendarLocalDataSource.deleteCalendar(
-                        calendarItem.toCalendar()
-                    )
-                }
+                .forEach { calendarItem -> calendarLocalDataSource.deleteCalendar(calendarItem.toCalendar()) }
         }
     }
 
-    fun emitDeleteCalendarEvent() {
+    private fun emitCalendarClickEvent(calendarId: Long) {
         viewModelScope.launch {
-            _deleteCalendarEvent.emit(Unit)
+            _calendarClickEvent.emit(calendarId)
         }
     }
 

@@ -15,8 +15,10 @@ val LocalDate.milliseconds get() = seconds * 1000
 
 val LocalDate.seconds get() = toEpochDay() * 24 * 60 * 60
 
+// TODO: 2021/12/13 리소스 분리 고려
 val LocalDateTime.amPm: String get() = if (hour < 12) "오전" else "오후"
 
+// TODO: 2021/12/13 리소스 분리 고려
 fun relativeDateFormat(baseDateTime: LocalDateTime, targetDateTime: LocalDateTime, limit: DateFormatLimitType = NONE)
         : DateTimeFormatter = when {
     limit == YEAR || baseDateTime.year != targetDateTime.year -> DateTimeFormatter.ofPattern("yyyy년 M월 d일 ${targetDateTime.amPm} hh:mm")
@@ -25,6 +27,7 @@ fun relativeDateFormat(baseDateTime: LocalDateTime, targetDateTime: LocalDateTim
     else -> DateTimeFormatter.ofPattern("${targetDateTime.amPm} hh:mm")
 }
 
+// TODO: 2021/12/13 리소스 분리 고려
 fun relativeDateFormat(baseDate: LocalDate, targetDate: LocalDate): DateTimeFormatter = when {
     baseDate.year != targetDate.year -> DateTimeFormatter.ofPattern("yyyy년 M월 d일")
     else -> DateTimeFormatter.ofPattern("M월 d일")

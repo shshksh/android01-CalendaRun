@@ -1,4 +1,4 @@
-package com.drunkenboys.calendarun
+package com.drunkenboys.calendarun.widget
 
 import android.content.Intent
 import android.widget.RemoteViewsService

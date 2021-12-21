@@ -21,9 +21,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:background="@color/background_white"
-        android:onClick="@{() -> adapter.onClick.invoke(item)}"
+        android:onClick="@{() -> item.onClick.invoke(item.id)}"
         android:paddingVertical="16dp">
-
 
         <TextView
             android:id="@+id/tv_calendar_nameValue"

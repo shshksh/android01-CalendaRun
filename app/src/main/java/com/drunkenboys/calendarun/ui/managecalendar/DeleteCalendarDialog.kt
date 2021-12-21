@@ -18,7 +18,7 @@ class DeleteCalendarDialog : DialogFragment() {
         .setTitle(getString(R.string.deleteCalendar_title))
         .setMessage(getString(R.string.deleteCalendar_message))
         .setPositiveButton(getString(R.string.delete)) { _, _ ->
-            manageCalendarViewModel.emitDeleteCalendarEvent()
+            manageCalendarViewModel.deleteCheckedCalendar()
             findNavController().navigateUp()
         }
         .setNegativeButton(getString(R.string.cancel)) { _, _ -> }

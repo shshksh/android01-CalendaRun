@@ -31,7 +31,7 @@ class MainCalendarViewModel @Inject constructor(
     private val calendarLocalDataSource: CalendarLocalDataSource,
     private val sliceLocalDataSource: SliceLocalDataSource,
     private val scheduleLocalDataSource: ScheduleLocalDataSource,
-    private val holidayRepository: HolidayRepository,
+    holidayRepository: HolidayRepository,
     calendarThemeDataSource: CalendarThemeLocalDataSource
 ) : ViewModel() {
 
@@ -69,7 +69,6 @@ class MainCalendarViewModel @Inject constructor(
     }.combine(holidayList) { scheduleList, holidayList ->
         holidayList + scheduleList
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
 
     val calendarDesignObject = calendarThemeDataSource.fetchCalendarTheme()
         .map { it.toCalendarDesignObject() }
@@ -113,6 +112,7 @@ class MainCalendarViewModel @Inject constructor(
         }
     }
 
+    // TODO: 2021/12/13 Mapper로 분리
     private fun Slice.toCalendarSet() = CalendarSet(
         id = this@MainCalendarViewModel.calendarId.value.toInt(),
         name = name,

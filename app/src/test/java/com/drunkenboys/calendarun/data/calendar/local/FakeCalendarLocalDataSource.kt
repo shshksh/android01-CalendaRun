@@ -3,6 +3,7 @@ package com.drunkenboys.calendarun.data.calendar.local
 import com.drunkenboys.calendarun.data.calendar.entity.Calendar
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.time.LocalDate
 
 class FakeCalendarLocalDataSource : CalendarLocalDataSource {
 
@@ -15,7 +16,8 @@ class FakeCalendarLocalDataSource : CalendarLocalDataSource {
 
     override fun fetchAllCalendar(): Flow<List<Calendar>> = flow { emit(database.toList()) }
 
-    override suspend fun fetchCalendar(id: Long): Calendar = database.find { it.id == id } ?: throw IllegalArgumentException()
+    override suspend fun fetchCalendar(id: Long): Calendar = database.find { it.id == id }
+        ?: Calendar(-1, "", LocalDate.now(), LocalDate.now())
 
     override fun fetchCustomCalendar(): Flow<List<Calendar>> = flow { emit(database.filter { it.id != 1 }) }
 

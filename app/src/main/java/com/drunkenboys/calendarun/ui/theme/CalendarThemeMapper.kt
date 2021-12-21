@@ -30,6 +30,7 @@ fun CalendarDesignObject.toCalendarTheme() = CalendarTheme(
     visibleScheduleCount = visibleScheduleCount
 )
 
+// TODO: 2021/12/13 리소스 분리 고려
 val CalendarTheme.LanguageType.weekSimpleStringSet: List<String>
     get() = when (this) {
         CalendarTheme.LanguageType.KOREAN -> listOf("일", "월", "화", "수", "목", "금", "토")

@@ -34,7 +34,7 @@ class SaveScheduleViewModel @Inject constructor(
         LocalDateTime.of(LocalDate.parse(it), LocalTime.of(12, 0))
     } ?: run { LocalDateTime.now().withMinute(0).withSecond(0) }
 
-    private val isUpdateSchedule = scheduleId > 0
+    private val isUpdate = scheduleId > 0
 
     val title = MutableStateFlow("")
 
@@ -82,17 +82,17 @@ class SaveScheduleViewModel @Inject constructor(
     }
 
     private fun restoreScheduleData() {
-        if (!isUpdateSchedule) return
+        if (!isUpdate) return
 
         viewModelScope.launch {
             val schedule = scheduleDataSource.fetchSchedule(scheduleId)
 
-            title.emit(schedule.name)
-            _startDate.emit(schedule.startDate)
-            _endDate.emit(schedule.endDate)
-            memo.emit(schedule.memo)
-            _notificationType.emit(schedule.notificationType)
-            _tagColor.emit(schedule.color)
+            title.value = schedule.name
+            _startDate.value = schedule.startDate
+            _endDate.value = schedule.endDate
+            memo.value = schedule.memo
+            _notificationType.value = schedule.notificationType
+            _tagColor.value = schedule.color
         }
     }
 
@@ -109,12 +109,12 @@ class SaveScheduleViewModel @Inject constructor(
         viewModelScope.launch {
             when (dateType) {
                 DateType.START -> {
-                    if (date.isAfter(endDate.value)) _endDate.emit(date)
-                    _startDate.emit(date)
+                    if (date.isAfter(endDate.value)) _endDate.value = date
+                    _startDate.value = date
                 }
                 DateType.END -> {
-                    if (date.isBefore(startDate.value)) _startDate.emit(date)
-                    _endDate.emit(date)
+                    if (date.isBefore(startDate.value)) _startDate.value = date
+                    _endDate.value = date
                 }
             }
         }
@@ -130,20 +130,20 @@ class SaveScheduleViewModel @Inject constructor(
 
     fun updateNotificationType(notificationType: Schedule.NotificationType) {
         viewModelScope.launch {
-            _notificationType.emit(notificationType)
+            _notificationType.value = notificationType
         }
     }
 
     fun togglePickTagColorPopup() {
         viewModelScope.launch {
-            _isPickTagColorPopupVisible.emit(!_isPickTagColorPopupVisible.value)
+            _isPickTagColorPopupVisible.value = !_isPickTagColorPopupVisible.value
         }
     }
 
     fun pickTagColor(tagColor: Int) {
         viewModelScope.launch {
-            _tagColor.emit(tagColor)
-            _isPickTagColorPopupVisible.emit(false)
+            _tagColor.value = tagColor
+            _isPickTagColorPopupVisible.value = false
         }
     }
 
@@ -156,7 +156,7 @@ class SaveScheduleViewModel @Inject constructor(
 
             val schedule = createScheduleInstance()
 
-            if (isUpdateSchedule) {
+            if (isUpdate) {
                 scheduleDataSource.updateSchedule(schedule)
                 _saveScheduleEvent.emit(schedule to calendarName.value)
             } else {
@@ -178,7 +178,7 @@ class SaveScheduleViewModel @Inject constructor(
     )
 
     fun deleteSchedule() {
-        if (!isUpdateSchedule) return
+        if (!isUpdate) return
 
         viewModelScope.launch {
             val deleteSchedule = scheduleDataSource.fetchSchedule(scheduleId)

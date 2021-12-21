@@ -25,12 +25,14 @@ class SaveCalendarViewModel @Inject constructor(
 
     private val calendarId = savedStateHandle[KEY_CALENDAR_ID] ?: 0L
 
-    private val _sliceItemList = MutableStateFlow(listOf(SliceItem()))
+    private val isUpdate = calendarId > 0
+
+    private val _sliceItemList: MutableStateFlow<List<SliceItem>> = MutableStateFlow(emptyList())
     val sliceItemList: StateFlow<List<SliceItem>> = _sliceItemList
 
     val calendarName = MutableStateFlow("")
 
-    val useDefaultCalendar = MutableStateFlow(false)
+    val isDefaultCalendar = MutableStateFlow(false)
 
     private val _saveCalendarEvent = MutableSharedFlow<Boolean>()
     val saveCalendarEvent: SharedFlow<Boolean> = _saveCalendarEvent
@@ -41,25 +43,22 @@ class SaveCalendarViewModel @Inject constructor(
     private val deleteSliceIdList = mutableListOf<Long>()
 
     init {
+        restoreCalendarData()
+        if (!isUpdate) _sliceItemList.value = listOf(SliceItem())
+    }
+
+    private fun restoreCalendarData() {
+        if (!isUpdate) return
+
         viewModelScope.launch {
-            val calendar = calendarLocalDataSource.fetchCalendar(calendarId) ?: return@launch
+            val calendar = calendarLocalDataSource.fetchCalendar(calendarId)
 
-            calendarName.emit(calendar.name)
-
-            val sliceItemList = mutableListOf<SliceItem>()
-            val sliceList = sliceLocalDataSource.fetchCalendarSliceList(calendarId).firstOrNull() ?: return@launch
-            sliceList.forEach { slice ->
-                sliceItemList.add(
-                    SliceItem(
-                        id = slice.id,
-                        name = MutableStateFlow(slice.name),
-                        startDate = MutableStateFlow(slice.startDate),
-                        endDate = MutableStateFlow(slice.endDate)
-                    )
-                )
-            }
-            _sliceItemList.emit(sliceItemList)
-            setUseDefaultCalendar()
+            calendarName.value = calendar.name
+            _sliceItemList.value = sliceLocalDataSource.fetchCalendarSliceList(calendarId)
+                .firstOrNull()
+                ?.map { SliceItem.from(it) }
+                ?: return@launch
+            isDefaultCalendar.value = sliceItemList.value.isEmpty()
         }
     }
 
@@ -70,12 +69,7 @@ class SaveCalendarViewModel @Inject constructor(
     }
 
     fun addSlice() {
-        viewModelScope.launch {
-            val newList = mutableListOf<SliceItem>()
-            newList.addAll(sliceItemList.value)
-            newList.add(SliceItem())
-            _sliceItemList.emit(newList.toList())
-        }
+        _sliceItemList.value += SliceItem()
     }
 
     private fun deleteSliceList(calendarId: Long) {
@@ -84,21 +78,12 @@ class SaveCalendarViewModel @Inject constructor(
         }
     }
 
-    fun deleteSliceItem(currentSliceItemList: List<SliceItem>) {
-        viewModelScope.launch {
-            deleteSliceIdList.addAll(currentSliceItemList
-                .filter { sliceItem -> sliceItem.check }
-                .map { sliceItem -> sliceItem.id }
-            )
+    fun deleteCheckedSlice() {
+        deleteSliceIdList += sliceItemList.value
+            .filter { sliceItem -> sliceItem.check }
+            .map { sliceItem -> sliceItem.id }
 
-            _sliceItemList.emit(currentSliceItemList.filter { sliceItem -> !sliceItem.check })
-        }
-    }
-
-    private fun setUseDefaultCalendar() {
-        viewModelScope.launch {
-            useDefaultCalendar.emit(sliceItemList.value.isEmpty())
-        }
+        _sliceItemList.value = sliceItemList.value.filter { sliceItem -> !sliceItem.check }
     }
 
     private fun emitBlankTitleEvent() {
@@ -108,64 +93,51 @@ class SaveCalendarViewModel @Inject constructor(
     }
 
     private suspend fun saveCalendarInfo(): Boolean {
-        val useDefaultCalendar = useDefaultCalendar.value
-        val calendarName = calendarName.value
-        val sliceList = _sliceItemList.value
-        var canSave = true
-
-        if (calendarName.isBlank()) {
-            emitBlankTitleEvent()
-            canSave = false
+        if (!validateCalendarData()) {
+            return false
         }
 
-        if (useDefaultCalendar && canSave) {
-            saveCalendar(calendarId, calendarName)
+        if (isDefaultCalendar.value) {
+            saveCalendar(calendarId, calendarName.value)
             deleteSliceList(calendarId)
             return true
         }
 
-        var calendarStartDate = sliceList.getOrNull(0)?.startDate?.value ?: LocalDate.now()
-        var calendarEndDate = sliceList.getOrNull(0)?.endDate?.value ?: LocalDate.now()
+        val calendarStartDate = sliceItemList.value.getOrNull(0)?.startDate?.value ?: LocalDate.now()
+        val calendarEndDate = sliceItemList.value.getOrNull(0)?.endDate?.value ?: LocalDate.now()
 
-        sliceList.forEach { item ->
-            val name = item.name.value
-            val startDate = item.startDate.value
-            val endDate = item.endDate.value
+        val newCalendarId = saveCalendar(calendarId, calendarName.value, calendarStartDate, calendarEndDate)
 
-            if (name.isBlank()) {
-                emitBlankSliceNameEvent(item)
-                canSave = false
-            }
-            if (startDate == null || endDate == null) {
-                emitBlankSliceStartDateEvent(item)
-                emitBlankSliceEndDateEvent(item)
-                canSave = false
-            }
-
-            startDate?.let {
-                if (calendarStartDate.isAfter(it)) {
-                    calendarStartDate = it
-                }
-            }
-
-            endDate?.let {
-                if (calendarEndDate.isBefore(it)) {
-                    calendarEndDate = it
-                }
-            }
-        }
-
-        if (!canSave) return false
-
-        val newCalendarId = saveCalendar(calendarId, calendarName, calendarStartDate, calendarEndDate)
-
-        sliceList.forEach { item ->
+        sliceItemList.value.forEach { item ->
             saveSlice(item, newCalendarId)
         }
 
         deleteSlice()
 
         return true
+    }
+
+    private fun validateCalendarData(): Boolean {
+        var canSave = true
+
+        if (calendarName.value.isBlank()) {
+            emitBlankTitleEvent()
+            canSave = false
+        }
+
+        sliceItemList.value.forEach { sliceItem ->
+            if (sliceItem.name.value.isBlank()) {
+                emitBlankSliceNameEvent(sliceItem)
+                canSave = false
+            }
+            if (sliceItem.startDate.value == null || sliceItem.endDate.value == null) {
+                emitBlankSliceStartDateEvent(sliceItem)
+                emitBlankSliceEndDateEvent(sliceItem)
+                canSave = false
+            }
+        }
+
+        return canSave
     }
 
     private suspend fun saveCalendar(

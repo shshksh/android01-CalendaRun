@@ -3,7 +3,7 @@ package com.drunkenboys.calendarun.ui.maincalendar
 import android.content.Context
 import android.os.Bundle
 import android.view.View
-import androidx.navigation.navGraphViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.ui.setupWithNavController
 import com.drunkenboys.calendarun.KEY_CALENDAR_ID
 import com.drunkenboys.calendarun.MainActivity
@@ -22,8 +22,7 @@ import kotlinx.coroutines.launch
 @ExperimentalCoroutinesApi
 class MainCalendarFragment : BaseFragment<FragmentMainCalendarBinding>(R.layout.fragment_main_calendar) {
 
-    private val mainCalendarViewModel
-            by navGraphViewModels<MainCalendarViewModel>(R.id.mainCalendarFragment) { defaultViewModelProviderFactory }
+    private val mainCalendarViewModel by viewModels<MainCalendarViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -73,16 +72,30 @@ class MainCalendarFragment : BaseFragment<FragmentMainCalendarBinding>(R.layout.
 
     private suspend fun collectCalendarId() {
         mainCalendarViewModel.calendarId.collect { calendarId ->
-            val pref = requireContext().getSharedPreferences(MainActivity.CALENDAR_ID_PREF, Context.MODE_PRIVATE)
-            pref.edit()
-                .putLong(KEY_CALENDAR_ID, calendarId)
-                .apply()
+            saveLastSelectedCalendar(calendarId)
+            updateCheckedMenuItem(calendarId)
         }
+    }
+
+    private fun saveLastSelectedCalendar(calendarId: Long) {
+        val pref = requireContext().getSharedPreferences(MainActivity.CALENDAR_ID_PREF, Context.MODE_PRIVATE)
+        pref.edit()
+            .putLong(KEY_CALENDAR_ID, calendarId)
+            .apply()
+    }
+
+    private fun updateCheckedMenuItem(calendarId: Long) {
+        val menu = binding.navView.menu
+        menu.findItem(calendarId.toInt())?.isChecked = true
     }
 
     private suspend fun collectCalendarList() {
         mainCalendarViewModel.calendarList.collect { calendarList ->
             setupNavigationView(calendarList)
+
+            if (calendarList.none { it.id == mainCalendarViewModel.calendarId.value }) {
+                mainCalendarViewModel.setCalendarId(1)
+            }
         }
     }
 
@@ -193,6 +206,8 @@ class MainCalendarFragment : BaseFragment<FragmentMainCalendarBinding>(R.layout.
     companion object {
 
         private const val FIRST_HEADER = 0
+
+        // TODO: 2021/12/13 리소스 분리 고려
         private const val DEFAULT_TOUCH_THROTTLE_PERIOD = 500L
     }
 }

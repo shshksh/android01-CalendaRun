@@ -25,6 +25,7 @@ class DayScheduleViewModel @Inject constructor(
     private val localDate = savedStateHandle.get<String>(KEY_LOCAL_DATE)
         ?.let { LocalDate.parse(it) }
 
+    // TODO: 2021/12/13 리소스 분리 고려
     val dateString = localDate?.format(DateTimeFormatter.ofPattern("M월 d일"))
 
     val listItem = scheduleDataSource.fetchCalendarSchedules(calendarId)

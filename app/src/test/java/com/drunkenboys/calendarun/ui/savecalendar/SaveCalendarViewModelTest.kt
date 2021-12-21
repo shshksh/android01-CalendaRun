@@ -38,8 +38,8 @@ class SearchScheduleViewModelTest {
         sliceDataSource = FakeSliceLocalDataSource()
     }
 
-    private fun createViewModel() = SaveCalendarViewModel(
-        SavedStateHandle(mapOf(KEY_CALENDAR_ID to 0L)),
+    private fun createViewModel(id: Long = 0L) = SaveCalendarViewModel(
+        SavedStateHandle(mapOf(KEY_CALENDAR_ID to id)),
         calendarDataSource,
         sliceDataSource
     )
@@ -53,9 +53,9 @@ class SearchScheduleViewModelTest {
     @Test
     fun `뷰모델_초기화_시_달력_이름_업데이트_테스트`() = testScope.runBlockingTest {
         val calendarName = "test calendar"
-        calendarDataSource.insertCalendar(Calendar(0, calendarName, LocalDate.now(), LocalDate.now()))
+        calendarDataSource.insertCalendar(Calendar(1, calendarName, LocalDate.now(), LocalDate.now()))
 
-        viewModel = createViewModel()
+        viewModel = createViewModel(1)
 
         assertEquals(calendarName, viewModel.calendarName.value)
     }
@@ -71,14 +71,14 @@ class SearchScheduleViewModelTest {
     @Test
     fun `체크포인트가_있을_때_뷰모델_초기화_테스트`() = testScope.runBlockingTest {
         val calendarName = "test calendar"
-        calendarDataSource.insertCalendar(Calendar(0, calendarName, LocalDate.now(), LocalDate.now()))
+        calendarDataSource.insertCalendar(Calendar(1, calendarName, LocalDate.now(), LocalDate.now()))
         for (i in (1..10)) {
             sliceDataSource.insertSlice(
-                Slice(i.toLong(), 0, "check point $i", LocalDate.now(), LocalDate.now())
+                Slice(i.toLong(), 1, "check point $i", LocalDate.now(), LocalDate.now())
             )
         }
 
-        viewModel = createViewModel()
+        viewModel = createViewModel(1)
         val result = viewModel.sliceItemList.value
 
         assertEquals(10, result.size)
@@ -97,13 +97,13 @@ class SearchScheduleViewModelTest {
     @Test
     fun `체크포인트_삭제_테스트`() = testScope.runBlockingTest {
         val calendarName = "test calendar"
-        calendarDataSource.insertCalendar(Calendar(0, calendarName, LocalDate.now(), LocalDate.now()))
+        calendarDataSource.insertCalendar(Calendar(1, calendarName, LocalDate.now(), LocalDate.now()))
         for (i in (1..10)) {
             sliceDataSource.insertSlice(
-                Slice(i.toLong(), 0, "check point $i", LocalDate.now(), LocalDate.now())
+                Slice(i.toLong(), 1, "check point $i", LocalDate.now(), LocalDate.now())
             )
         }
-        viewModel = createViewModel()
+        viewModel = createViewModel(1)
         viewModel.sliceItemList.value.slice(1..3).forEach {
             it.check = true
         }
